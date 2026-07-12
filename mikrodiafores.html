@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Προθεσμίες Μικροδιαφορών</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;min-height:100vh;padding:16px;color:#1e293b}
+
+.header{background:linear-gradient(135deg,#1e3a5f,#2d6a9f);border-radius:12px;padding:16px 20px;margin-bottom:18px;color:white}
+.header-title{font-size:18px;font-weight:700}
+.header-sub{font-size:12px;opacity:.85;margin-top:3px}
+
+.form-box{background:white;border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px}
+.field-row{margin-bottom:16px}
+.field-row:last-child{margin-bottom:0}
+.field-label{font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;display:block}
+select,input[type=date]{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #cbd5e1;font-size:14px;font-family:inherit;background:white;outline:none;color:#1e293b}
+select:focus,input[type=date]:focus{border-color:#2d6a9f}
+
+.btn-calc{width:100%;margin-top:6px;padding:12px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer}
+.btn-calc:hover{background:#16314f}
+
+.timeline{display:none}
+.timeline.show{display:block}
+.tl-item{display:flex;gap:14px;margin-bottom:18px}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px}
+.tl-dot{width:18px;height:18px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.tl-line{flex:1;width:2px;background:#e2e8f0;margin-top:4px}
+.tl-card{flex:1;background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tl-sentence{font-size:15px;line-height:1.5;margin-bottom:10px;color:#1e293b}
+.tl-sentence b{color:#1d3a8a}
+.tl-tabs{display:flex;gap:18px;border-bottom:1px solid #e2e8f0;margin-bottom:10px}
+.tl-tab{font-size:13px;font-weight:600;color:#94a3b8;padding-bottom:8px;cursor:pointer;border-bottom:2px solid transparent}
+.tl-tab.active{color:#1e293b;border-bottom-color:#1e3a5f}
+.tl-pane{display:none;font-size:13px;color:#475569;line-height:1.6}
+.tl-pane.active{display:block}
+.tl-pane p{margin-bottom:6px}
+.law-quote{margin-top:8px;padding:10px;background:#fafafa;border-left:3px solid #64748b;border-radius:4px;font-style:italic;font-size:12.5px;color:#334155;white-space:pre-line}
+.law-missing{margin-top:8px;padding:10px;background:#fff7ed;border-left:3px solid #fdba74;border-radius:4px;font-size:12.5px;color:#9a3412}
+
+.placeholder-banner{background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#9a3412;margin-bottom:16px}
+
+.date-picker-wrap{position:relative}
+.date-input{width:100%;padding:10px 40px 10px 12px;border-radius:8px;border:1.5px solid #cbd5e1;font-size:14px;font-family:inherit;background:white;outline:none;color:#1e293b;cursor:pointer}
+.date-input:focus{border-color:#2d6a9f}
+.date-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;pointer-events:none}
+.calendar-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;background:white;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.14);padding:12px;width:280px}
+.calendar-popup.show{display:block}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;color:#1e3a5f;font-size:14px}
+.cal-nav{cursor:pointer;padding:2px 10px;user-select:none;border-radius:6px}
+.cal-nav:hover{background:#e2e8f0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12.5px}
+.cal-daylabel{color:#94a3b8;font-weight:700;padding:4px 0}
+.cal-day{padding:6px 0;border-radius:6px;cursor:pointer;color:#1e293b}
+.cal-day:hover{background:#e2e8f0}
+.cal-day.selected{background:#1e3a5f;color:white}
+.cal-day.other-month{color:#cbd5e1;cursor:default}
+.cal-day.other-month:hover{background:none}
+
+.footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0}
+
+.site-nav{margin-bottom:10px}
+.site-nav a{font-size:12.5px;color:#2d6a9f;text-decoration:none;font-weight:700}
+.site-nav a:hover{text-decoration:underline}
+.feedback-bar{text-align:center;margin-top:14px}
+.feedback-bar a{display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12.5px}
+.feedback-bar a:hover{background:#16314f}
+</style>
+</head>
+<body>
+
+<div class="site-nav"><a href="index.html">&larr; Αρχική</a></div>
+
+<div class="header">
+  <div class="header-title">⚖️ Υπολογισμός Προθεσμιών — Μικροδιαφορές</div>
+  <div class="header-sub">Εφαρμόζεται ΚΠολΔ όπως ισχύει από 1.1.2026</div>
+</div>
+
+<div class="form-box">
+  <div class="field-row">
+    <label class="field-label">Εναγόμενος κάτοικος</label>
+    <select id="fResidence">
+      <option value="greece">Ελλάδας</option>
+      <option value="abroad">Εξωτερικού / άγνωστης διαμονής</option>
+    </select>
+  </div>
+
+  <div class="field-row">
+    <label class="field-label">Διάδικος Δημόσιο / ΝΠΔΔ</label>
+    <select id="fPublic" onchange="syncResidenceField()">
+      <option value="no">Όχι</option>
+      <option value="yes">Ναι</option>
+    </select>
+  </div>
+
+  <div class="field-row">
+    <label class="field-label">Ημερομηνία κατάθεσης</label>
+    <div class="date-picker-wrap" id="datePickerWrap">
+      <input type="text" id="fDateDisplay" class="date-input" readonly placeholder="ΗΗ-ΜΜ-ΕΕΕΕ" onclick="toggleCalendar()">
+      <span class="date-icon">📅</span>
+      <input type="hidden" id="fDate">
+      <div class="calendar-popup" id="calendarPopup">
+        <div class="cal-header">
+          <span class="cal-nav" onclick="calNav(-1)">‹</span>
+          <span id="calTitle"></span>
+          <span class="cal-nav" onclick="calNav(1)">›</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="runCalculation()">Υπολογισμός</button>
+</div>
+
+<div class="timeline" id="timeline">
+  <div id="tlItems"></div>
+</div>
+
+<div class="feedback-bar">
+  <div style="font-size:11px;color:#64748b;margin-bottom:6px">Παρατηρήσεις &amp; σχόλια στο email <b style="color:#1e3a5f">kosivak@gmail.com</b></div>
+  <a href="mailto:kosivak@gmail.com?subject=Παρατήρηση - Προθεσμίες ΚΠολΔ">&#9993; Στείλτε παρατήρηση</a>
+</div>
+
+<div class="footer">Πάντα να ελέγχεται το πρωτότυπο κείμενο του νόμου</div>
+
+<script>
+/* =========================================================
+   ΒΑΣΗ ΝΟΜΙΚΩΝ ΚΕΙΜΕΝΩΝ — προς συμπλήρωση με αυτολεξεί κείμενο
+   άρθρου 468 ΚΠολΔ μετά τη νομική επαλήθευση.
+   ========================================================= */
+const LAW_DB = {
+  "468§1": { article: "468 § 1", lawText: "«1. Η αγωγή κατατίθεται στη γραμματεία του ειρηνοδικείου και επιδίδεται στον εναγόμενο μέσα σε προθεσμία δέκα (10) ημερών από την κατάθεσή της. Αν ο εναγόμενος διαμένει στο εξωτερικό ή είναι άγνωστης διαμονής η αγωγή επιδίδεται σε προθεσμία τριάντα (30) ημερών από την κατάθεσή της. Το δεύτερο εδάφιο της παρ. 2 του άρθρου 215 εφαρμόζεται αναλόγως.»" },
+  "468§2": { article: "468 § 2", lawText: "«2. Μέσα σε είκοσι (20) ημέρες από τη λήξη της προθεσμίας για την επίδοση της αγωγής, οι διάδικοι προσκομίζουν στο ειρηνοδικείο τα αποδεικτικά τους μέσα και ο εναγόμενος υποβάλλει με έγγραφο υπόμνημα τους ισχυρισμούς του. Μέχρι δύο (2) ένορκες βεβαιώσεις, επιτρέπονται και χωρίς κλήση του αντιδίκου. Εντός προθεσμίας πέντε (5) ημερών από τη λήξη της ως άνω προθεσμίας οι διάδικοι μπορούν να καταθέσουν έγγραφη προσθήκη-αντίκρουση. Νέοι ισχυρισμοί με την προσθήκη μπορεί να προταθούν και νέα αποδεικτικά μέσα να προσκομισθούν μόνο για την αντίκρουση ισχυρισμών που περιέχονται στο ως άνω υπόμνημα. Εκπρόθεσμα αποδεικτικά μέσα και ισχυρισμοί των διαδίκων δεν λαμβάνονται υπόψη.»" },
+  "468§3": { article: "468 § 3", lawText: "«3. Παρεμβάσεις και ανταγωγές κατατίθενται και επιδίδονται στους διαδίκους μέσα σε προθεσμία είκοσι (20) ημερών από την κατάθεση της αγωγής. Η προθεσμία αυτή παρατείνεται κατά είκοσι (20) ημέρες αν ο εναγόμενος διαμένει στο εξωτερικό ή είναι άγνωστης διαμονής. Η προσκομιδή των αποδεικτικών μέσων και το έγγραφο υπόμνημα των ισχυρισμών στις περιπτώσεις του δεύτερου εδαφίου γίνονται σε προθεσμία τριάντα (30) ή πενήντα (50) ημερών, αντίστοιχα, από την κατάθεση της αγωγής και η έγγραφη προσθήκη-αντίκρουση στην προθεσμία του τρίτου εδαφίου της παρ. 2.»" }
+};
+
+/* =========================================================
+   ΗΜΕΡΟΛΟΓΙΑΚΟΣ ΜΗΧΑΝΙΣΜΟΣ (ίδιος, επικυρωμένος μηχανισμός
+   με τον calculator Τακτικής Διαδικασίας)
+   ========================================================= */
+const GR_MONTHS = ["Ιανουαρίου","Φεβρουαρίου","Μαρτίου","Απριλίου","Μαΐου","Ιουνίου","Ιουλίου","Αυγούστου","Σεπτεμβρίου","Οκτωβρίου","Νοεμβρίου","Δεκεμβρίου"];
+const GR_DAYS = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
+
+function fmtDate(d){
+  return GR_DAYS[d.getDay()] + ", " + d.getDate() + " " + GR_MONTHS[d.getMonth()] + " " + d.getFullYear();
+}
+function addCalendarDays(d, n){
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function isWeekend(d){
+  const day = d.getDay();
+  return day === 0 || day === 6;
+}
+function isAugust(d){
+  return d.getMonth() === 7;
+}
+/* Παράθυρο δικαστικών διακοπών όταν διάδικος είναι Δημόσιο/ΝΠΔΔ:
+   1 Ιουλίου έως και 15 Σεπτεμβρίου (αντί του απλού Αυγούστου). */
+function isPublicRecess(d){
+  const m = d.getMonth(); // 0-indexed: 6=Ιούλιος, 7=Αύγουστος, 8=Σεπτέμβριος
+  if(m === 6 || m === 7) return true;
+  if(m === 8 && d.getDate() <= 15) return true;
+  return false;
+}
+function isInRecess(d, isPublic){
+  return isPublic ? isPublicRecess(d) : isAugust(d);
+}
+function getRecessBounds(year, isPublic){
+  return isPublic
+    ? { start: new Date(year,6,1), end: new Date(year,8,15) }
+    : { start: new Date(year,7,1), end: new Date(year,7,31) };
+}
+function daysBetweenInclusive(a,b){
+  return Math.round((b - a) / 86400000) + 1;
+}
+function sameDate(a,b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+function orthodoxEaster(year){
+  const a = year % 4, b = year % 7, c = year % 19;
+  const d = (19*c + 15) % 30;
+  const e = (2*a + 4*b - d + 34) % 7;
+  const month = Math.floor((d + e + 114) / 31);
+  const day = ((d + e + 114) % 31) + 1;
+  const julianDate = new Date(year, month - 1, day);
+  return addCalendarDays(julianDate, 13);
+}
+function getHolidaySet(year){
+  const easter = orthodoxEaster(year);
+  return [
+    new Date(year,0,1), new Date(year,0,6),
+    addCalendarDays(easter,-48), new Date(year,2,25),
+    addCalendarDays(easter,-2), addCalendarDays(easter,1),
+    new Date(year,4,1), addCalendarDays(easter,50),
+    new Date(year,7,15), new Date(year,9,3), new Date(year,9,28),
+    new Date(year,11,25), new Date(year,11,26)
+  ];
+}
+function isHoliday(d){
+  const set = [...getHolidaySet(d.getFullYear()-1), ...getHolidaySet(d.getFullYear()), ...getHolidaySet(d.getFullYear()+1)];
+  return set.some(h => sameDate(h, d));
+}
+function isNonWorking(d){
+  return isWeekend(d) || isHoliday(d);
+}
+function countRecessDaysInRange(start, end, isPublic){
+  let count = 0;
+  let cur = addCalendarDays(start, 1);
+  while(cur <= end){
+    if(isInRecess(cur, isPublic)) count++;
+    cur = addCalendarDays(cur, 1);
+  }
+  return count;
+}
+function calcDeadline(startDate, days, isPublic){
+  let end = addCalendarDays(startDate, days);
+  let extended = true;
+  while(extended){
+    const recDays = countRecessDaysInRange(startDate, end, isPublic);
+    const alreadyCounted = end.__recCounted || 0;
+    if(recDays > alreadyCounted){
+      end = addCalendarDays(end, recDays - alreadyCounted);
+      end.__recCounted = recDays;
+    } else {
+      extended = false;
+    }
+  }
+  while(isNonWorking(end)){
+    end = addCalendarDays(end, 1);
+  }
+  return end;
+}
+/* Επεξηγηματικό block («- ...» / «↪ ...») όταν η προθεσμία διασταυρώνεται
+   με τις δικαστικές διακοπές Δημοσίου/ΝΠΔΔ (1 Ιουλίου - 15 Σεπτεμβρίου).
+   Ίδιο άρθρο παραπομπής με τον κύριο κανόνα του σταθμού· δεν προστίθεται
+   νέα νομική παραπομπή, μόνο επεξήγηση του ημερολογιακού υπολογισμού. */
+function buildRecessNote(startDate, days, isPublic){
+  if(!isPublic) return "";
+  const naiveEnd = addCalendarDays(startDate, days);
+  const recDays = countRecessDaysInRange(startDate, naiveEnd, true);
+  if(recDays <= 0) return "";
+  const bounds = getRecessBounds(naiveEnd.getFullYear(), true);
+  const totalWindowDays = daysBetweenInclusive(bounds.start, bounds.end);
+  const resumeDate = addCalendarDays(bounds.end, 1);
+  return `<p>- Η προθεσμία των ${days} ημερών, θα ολοκληρώνονταν κανονικά την <b>${fmtDate(naiveEnd)}</b>.</p>`
+    + `<p>↪ Εξαιρέθηκε το χρονικό διάστημα από την ${fmtDate(bounds.start)} έως την ${fmtDate(bounds.end)} λόγω δικαστικών διακοπών (συνολικά ${totalWindowDays} ημέρες). Η προθεσμία συνεχίζει από την ${fmtDate(resumeDate)}. Βλ. άρθρο 468 ΚΠολΔ σε συνδυασμό με το άρθρο 11 Κ.Δ. της 26ης Ιουνίου/10ης Ιουλίου 1944, το οποίο διατηρήθηκε σε ισχύ και μετά την εισαγωγή του ΚΠολΔ δυνάμει του άρθρου 52 αριθ. 18 ΕισΝΚΠολΔ.</p>`;
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 1: Επίδοση αγωγής — άρθρο 468 § 1 ΚΠολΔ
+   ========================================================= */
+function calcStation468_1(filingDate, residence, isPublic){
+  const effResidence = isPublic ? "greece" : residence;
+  const days = (effResidence === "abroad") ? 30 : 10;
+  const end = calcDeadline(filingDate, days, isPublic);
+  return {
+    sentence: "Η επίδοση πρέπει να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Επιδίδεται σε προθεσμία " + days + " ημερών από την κατάθεσή της. Βλ. 468 § 1 ΚΠολΔ" +
+        (isPublic ? " (θεωρείται κάτοικος εσωτερικού, καθώς διάδικος είναι το Δημόσιο/ΝΠΔΔ)."
+                  : (residence==="abroad" ? " (30 ημέρες λόγω κατοικίας στο εξωτερικό/άγνωστης διαμονής)." : "."))
+    ],
+    recessNote: buildRecessNote(filingDate, days, isPublic),
+    lawKey: "468§1",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 2: Προσκομιδή αποδεικτικών / υπόμνημα εναγομένου —
+   άρθρο 468 § 2 ΚΠολΔ
+   ========================================================= */
+function calcStation468_2(serviceDeadlineEnd, isPublic){
+  const days = 20;
+  const end = calcDeadline(serviceDeadlineEnd, days, isPublic);
+  return {
+    sentence: "Η προσκομιδή των αποδεικτικών από τους διαδίκους και η υποβολή του έγγραφου υπομνήματος του εναγομένου μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Μέσα σε " + days + " ημέρες από τη λήξη της προθεσμίας επίδοσης της αγωγής. Βλ. 468 § 2 ΚΠολΔ (δεν διαφοροποιείται για κάτοικο εξωτερικού)."
+    ],
+    recessNote: buildRecessNote(serviceDeadlineEnd, days, isPublic),
+    lawKey: "468§2",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 3: Κατάθεση προσθήκης (εναγομένου) — 468 § 2 εδ. γ' ΚΠολΔ
+   ========================================================= */
+function calcStation468_2c(proofDeadlineEnd, isPublic){
+  const end = calcDeadline(proofDeadlineEnd, 5, isPublic);
+  return {
+    sentence: "Η κατάθεση προσθήκης μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Εντός προθεσμίας 5 ημερών από τη λήξη της ως άνω προθεσμίας οι διάδικοι μπορούν να καταθέσουν έγγραφη προσθήκη-αντίκρουση. Βλ. 468 § 2 εδ. γ' ΚΠολΔ."
+    ],
+    recessNote: buildRecessNote(proofDeadlineEnd, 5, isPublic),
+    lawKey: "468§2",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 4: Κατάθεση παρέμβασης/ανταγωγής — 468 § 3 ΚΠολΔ
+   ========================================================= */
+function calcStation468_3(filingDate, residence, isPublic){
+  const effResidence = isPublic ? "greece" : residence;
+  const days = (effResidence === "abroad") ? 40 : 20;
+  const end = calcDeadline(filingDate, days, isPublic);
+  return {
+    sentence: "Η κατάθεση παρέμβασης και ανταγωγής και η επίδοση μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Παρεμβάσεις και ανταγωγές κατατίθενται και επιδίδονται στους διαδίκους μέσα σε προθεσμία " + days + " ημερών από την κατάθεση της αγωγής" +
+        (isPublic ? " (θεωρείται κάτοικος εσωτερικού, καθώς διάδικος είναι το Δημόσιο/ΝΠΔΔ)."
+                  : (residence==="abroad" ? " (παρατείνεται κατά 20 ημέρες λόγω κατοικίας στο εξωτερικό/άγνωστης διαμονής)." : ".")) +
+        " Βλ. 468 § 3 εδ. α', β' ΚΠολΔ."
+    ],
+    recessNote: buildRecessNote(filingDate, days, isPublic),
+    lawKey: "468§3",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 5: Προσκομιδή αποδεικτικών παρέμβασης/ανταγωγής —
+   468 § 3 ΚΠολΔ (30 ή 50 ημέρες από την κατάθεση της αγωγής)
+   ========================================================= */
+function calcStation468_3proof(filingDate, residence, isPublic){
+  const effResidence = isPublic ? "greece" : residence;
+  const days = (effResidence === "abroad") ? 50 : 30;
+  const end = calcDeadline(filingDate, days, isPublic);
+  return {
+    sentence: "Η προσκομιδή των αποδεικτικών και η υποβολή του έγγραφου υπομνήματος της παρέμβασης ή της ανταγωγής μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Προθεσμία " + days + " ημερών από την κατάθεση της αγωγής. Βλ. 468 § 3 εδ. γ' ΚΠολΔ." +
+        (isPublic ? " (θεωρείται κάτοικος εσωτερικού, καθώς διάδικος είναι το Δημόσιο/ΝΠΔΔ.)"
+                  : (residence==="abroad" ? " (50 ημέρες λόγω κατοικίας στο εξωτερικό/άγνωστης διαμονής.)" : " (ΣΗΜΕΙΩΣΗ: το lawcase.gr εμφανίζει διαφορετική ημερομηνία για αυτόν τον σταθμό — πιθανώς λόγω παλαιότερης ενημέρωσης του εργαλείου τους, 30/08/2023. Προς επιβεβαίωση στον νομικό σου έλεγχο.)"))
+    ],
+    recessNote: buildRecessNote(filingDate, days, isPublic),
+    lawKey: "468§3",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 6: Κατάθεση προσθήκης επί παρέμβασης/ανταγωγής
+   ========================================================= */
+function calcStation468_3c(proofDeadlineEnd, isPublic){
+  const end = calcDeadline(proofDeadlineEnd, 5, isPublic);
+  return {
+    sentence: "Η κατάθεση προσθήκης επί της παρέμβασης ή της ανταγωγής μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "Εντός προθεσμίας 5 ημερών από τη λήξη της ως άνω προθεσμίας οι διάδικοι μπορούν να καταθέσουν έγγραφη προσθήκη-αντίκρουση. Βλ. 468 § 2 εδ. γ' και § 3 εδ. γ' ΚΠολΔ."
+    ],
+    recessNote: buildRecessNote(proofDeadlineEnd, 5, isPublic),
+    lawKey: "468§3",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΑΠΟΔΟΣΗ ΧΡΟΝΟΓΡΑΜΜΗΣ
+   ========================================================= */
+function renderTimelineItem(station, isLast){
+  const law = LAW_DB[station.lawKey];
+  const id = "tl_" + Math.random().toString(36).slice(2,8);
+  const lawPane = (law && law.lawText)
+    ? `<div class="law-quote">${law.lawText}</div>`
+    : `<div class="law-missing">Το αυτολεξεί κείμενο του άρθρου ${law ? law.article : ""} δεν έχει ακόμη ενσωματωθεί. Θα συμπληρωθεί μετά τη νομική επαλήθευση.</div>`;
+  return `<div class="tl-item">
+    <div class="tl-dot-col">
+      <div class="tl-dot"></div>
+      ${isLast ? "" : '<div class="tl-line"></div>'}
+    </div>
+    <div class="tl-card">
+      <div class="tl-sentence">${station.sentence}</div>
+      <div class="tl-tabs">
+        <div class="tl-tab active" onclick="setTab(this,'${id}_calc')">Υπολογισμός</div>
+        <div class="tl-tab" onclick="setTab(this,'${id}_law')">Νομοθεσία</div>
+      </div>
+      <div class="tl-pane active" id="${id}_calc">
+        ${station.rulePoints.map(p=>`<p>✱ ${p}</p>`).join("")}
+        ${station.recessNote || ""}
+      </div>
+      <div class="tl-pane" id="${id}_law">
+        <p><b>Άρθρο ${law ? law.article : "—"}</b></p>
+        ${lawPane}
+      </div>
+    </div>
+  </div>`;
+}
+
+function setTab(el, paneId){
+  const tabs = el.parentElement;
+  tabs.querySelectorAll(".tl-tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  const card = tabs.parentElement;
+  card.querySelectorAll(".tl-pane").forEach(p=>p.classList.remove("active"));
+  document.getElementById(paneId).classList.add("active");
+}
+
+/* =========================================================
+   CUSTOM ΗΜΕΡΟΛΟΓΙΟ ΓΙΑ ΠΕΔΙΟ «Ημερομηνία κατάθεσης»
+   ========================================================= */
+let calCursor = new Date();
+let calSelected = null;
+
+function pad2(n){ return n < 10 ? "0" + n : "" + n; }
+function isoDate(d){ return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate()); }
+function displayDate(d){ return pad2(d.getDate()) + "-" + pad2(d.getMonth()+1) + "-" + d.getFullYear(); }
+
+function toggleCalendar(){
+  const pop = document.getElementById("calendarPopup");
+  if(pop.classList.contains("show")){
+    pop.classList.remove("show");
+  } else {
+    calCursor = calSelected ? new Date(calSelected) : new Date();
+    renderCalendar();
+    pop.classList.add("show");
+  }
+}
+
+function calNav(delta){
+  calCursor.setMonth(calCursor.getMonth() + delta);
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const year = calCursor.getFullYear();
+  const month = calCursor.getMonth();
+  document.getElementById("calTitle").textContent = GR_MONTHS[month] + " " + year;
+
+  const dayLabels = ["Δε","Τρ","Τε","Πε","Πα","Σα","Κυ"];
+  let html = dayLabels.map(l => `<div class="cal-daylabel">${l}</div>`).join("");
+
+  const firstOfMonth = new Date(year, month, 1);
+  let startWeekday = firstOfMonth.getDay();
+  startWeekday = (startWeekday === 0) ? 6 : startWeekday - 1;
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevDaysInMonth = new Date(year, month, 0).getDate();
+
+  for(let i = 0; i < startWeekday; i++){
+    const d = prevDaysInMonth - startWeekday + 1 + i;
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+  for(let d = 1; d <= daysInMonth; d++){
+    const thisDate = new Date(year, month, d);
+    const sel = calSelected && sameDate(thisDate, calSelected);
+    html += `<div class="cal-day${sel ? " selected" : ""}" onclick="selectCalDay(${year},${month},${d})">${d}</div>`;
+  }
+  const totalCells = startWeekday + daysInMonth;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for(let i = 1; i <= trailing; i++){
+    html += `<div class="cal-day other-month">${i}</div>`;
+  }
+  document.getElementById("calGrid").innerHTML = html;
+}
+
+function selectCalDay(year, month, day){
+  calSelected = new Date(year, month, day);
+  document.getElementById("fDate").value = isoDate(calSelected);
+  document.getElementById("fDateDisplay").value = displayDate(calSelected);
+  document.getElementById("calendarPopup").classList.remove("show");
+}
+
+document.addEventListener("click", function(e){
+  const wrap = document.getElementById("datePickerWrap");
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById("calendarPopup").classList.remove("show");
+  }
+});
+
+function syncResidenceField(){
+  const pub = document.getElementById("fPublic").value === "yes";
+  const resField = document.getElementById("fResidence");
+  if(pub){
+    resField.value = "greece";
+    resField.disabled = true;
+  } else {
+    resField.disabled = false;
+  }
+}
+
+function runCalculation(){
+  const dateVal = document.getElementById("fDate").value;
+  if(!dateVal){ alert("Συμπλήρωσε ημερομηνία κατάθεσης."); return; }
+  const filingDate = new Date(dateVal + "T00:00:00");
+  const residence = document.getElementById("fResidence").value;
+  const isPublic = document.getElementById("fPublic").value === "yes";
+
+  const stations = [];
+  const s1 = calcStation468_1(filingDate, residence, isPublic);
+  stations.push(s1);
+  const s2 = calcStation468_2(s1.endDate, isPublic);
+  stations.push(s2);
+  const s3 = calcStation468_2c(s2.endDate, isPublic);
+  stations.push(s3);
+  const s4 = calcStation468_3(filingDate, residence, isPublic);
+  stations.push(s4);
+  const s5 = calcStation468_3proof(filingDate, residence, isPublic);
+  stations.push(s5);
+  const s6 = calcStation468_3c(s5.endDate, isPublic);
+  stations.push(s6);
+
+  document.getElementById("tlItems").innerHTML = stations.map((s,i)=>renderTimelineItem(s, i===stations.length-1)).join("");
+  document.getElementById("timeline").classList.add("show");
+}
+</script>
+</body>
+</html>

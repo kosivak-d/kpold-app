@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Προθεσμίες Τακτικής Διαδικασίας</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;min-height:100vh;padding:16px;color:#1e293b}
+
+.header{background:linear-gradient(135deg,#1e3a5f,#2d6a9f);border-radius:12px;padding:16px 20px;margin-bottom:18px;color:white}
+.header-title{font-size:18px;font-weight:700}
+.header-sub{font-size:12px;opacity:.85;margin-top:3px}
+
+.form-box{background:white;border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px}
+.field-row{margin-bottom:16px}
+.field-row:last-child{margin-bottom:0}
+.field-label{font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;display:block}
+select,input[type=date]{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #cbd5e1;font-size:14px;font-family:inherit;background:white;outline:none;color:#1e293b}
+select:focus,input[type=date]:focus{border-color:#2d6a9f}
+
+.btn-calc{width:100%;margin-top:6px;padding:12px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer}
+.btn-calc:hover{background:#16314f}
+
+.timeline{display:none}
+.timeline.show{display:block}
+.tl-item{display:flex;gap:14px;margin-bottom:18px}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px}
+.tl-dot{width:18px;height:18px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.tl-line{flex:1;width:2px;background:#e2e8f0;margin-top:4px}
+.tl-card{flex:1;background:white;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tl-sentence{font-size:15px;line-height:1.5;margin-bottom:10px;color:#1e293b}
+.tl-sentence b{color:#1d3a8a}
+.tl-tabs{display:flex;gap:18px;border-bottom:1px solid #e2e8f0;margin-bottom:10px}
+.tl-tab{font-size:13px;font-weight:600;color:#94a3b8;padding-bottom:8px;cursor:pointer;border-bottom:2px solid transparent}
+.tl-tab.active{color:#1e293b;border-bottom-color:#1e3a5f}
+.tl-pane{display:none;font-size:13px;color:#475569;line-height:1.6}
+.tl-pane.active{display:block}
+.tl-pane p{margin-bottom:6px}
+.tl-pane .note{display:block;margin-top:4px;color:#64748b}
+.law-quote{margin-top:8px;padding:10px;background:#fafafa;border-left:3px solid #64748b;border-radius:4px;font-style:italic;font-size:12.5px;color:#334155;white-space:pre-line}
+
+.placeholder-banner{background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#9a3412;margin-bottom:16px}
+
+.footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0}
+
+.site-nav{margin-bottom:10px}
+.site-nav a{font-size:12.5px;color:#2d6a9f;text-decoration:none;font-weight:700}
+.site-nav a:hover{text-decoration:underline}
+.feedback-bar{text-align:center;margin-top:14px}
+.feedback-bar a{display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12.5px}
+.feedback-bar a:hover{background:#16314f}
+</style>
+</head>
+<body>
+
+<div class="site-nav"><a href="index.html">&larr; Αρχική</a></div>
+
+<div class="header">
+  <div class="header-title">⚖️ Υπολογισμός Προθεσμιών — Τακτική Διαδικασία</div>
+  <div class="header-sub">Εφαρμόζεται ΚΠολΔ όπως ισχύει από 1.1.2026</div>
+</div>
+
+<div class="form-box">
+  <div class="field-row">
+    <label class="field-label">Εναγόμενος κάτοικος</label>
+    <select id="fResidence">
+      <option value="greece">Ελλάδας</option>
+      <option value="abroad">Εξωτερικού</option>
+    </select>
+  </div>
+
+  <div class="field-row">
+    <label class="field-label">Διάδικος Δημόσιο / ΝΠΔΔ</label>
+    <select id="fPublic">
+      <option value="no">Όχι</option>
+      <option value="yes">Ναι</option>
+    </select>
+  </div>
+
+  <div class="field-row">
+    <label class="field-label">Καθ' ύλην αρμοδιότητα</label>
+    <select id="fCompetence">
+      <option value="single">Μονομελές Πρωτοδικείο</option>
+      <option value="multi">Πολυμελές Πρωτοδικείο</option>
+    </select>
+  </div>
+
+  <div class="field-row">
+    <label class="field-label">Ημερομηνία κατάθεσης</label>
+    <input type="date" id="fDate">
+  </div>
+
+  <button class="btn-calc" onclick="runCalculation()">Υπολογισμός</button>
+</div>
+
+<div class="timeline" id="timeline">
+  <div id="tlItems"></div>
+</div>
+
+<div class="feedback-bar">
+  <div style="font-size:11px;color:#64748b;margin-bottom:6px">Παρατηρήσεις &amp; σχόλια στο email <b style="color:#1e3a5f">kosivak@gmail.com</b></div>
+  <a href="mailto:kosivak@gmail.com?subject=Παρατήρηση - Προθεσμίες ΚΠολΔ">&#9993; Στείλτε παρατήρηση</a>
+</div>
+
+<div class="footer">Πάντα να ελέγχεται το πρωτότυπο κείμενο του νόμου</div>
+
+<script>
+/* =========================================================
+   ΒΑΣΗ ΝΟΜΙΚΩΝ ΚΕΙΜΕΝΩΝ — υποσύνολο αντιγραμμένο από το
+   kpold-app43 (ΔΕΝ είναι live σύνδεση· χειροκίνητος συγχρονισμός
+   κάθε φορά που ενημερώνεται το αντίστοιχο άρθρο στη βάση των 43).
+   ========================================================= */
+const LAW_DB = {
+  "215§2": {
+    article: "215 § 2",
+    lawText: "«2. Αν δεν ορίζεται άλλως, η αγωγή επιδίδεται στον εναγόμενο μέσα σε προθεσμία τριάντα (30) ημερών από την κατάθεσή της. Αν η αγωγή πρέπει να επιδοθεί στο εξωτερικό, εντός του διαστήματος αυτού πρέπει να έχει επιδοθεί στον εισαγγελέα, κατά την παρ. 1 του άρθρου 134. Από την επίδοση της αγωγής μπορεί να ξεκινήσει και η διαδικασία διαμεσολάβησης, όπου προβλέπεται υποχρεωτική αρχική συνεδρία διαμεσολάβησης. Αν η αγωγή δεν επιδοθεί νομίμως μέσα στην προθεσμία αυτή, θεωρείται ως μη ασκηθείσα.»"
+  },
+  "237§1": {
+    article: "237 § 1",
+    lawText: "«1. Οι προτάσεις των διαδίκων, η έκθεση επίδοσης, τα αποδεικτικά και διαδικαστικά τους έγγραφα και τα πληρεξούσια, στην τακτική διαδικασία, κατατίθενται ενενήντα (90) ημέρες μετά από τη λήξη της προθεσμίας επίδοσης της αγωγής ή της κλήσης και, εφόσον η αγωγή επιδίδεται στην αλλοδαπή, εκατόν είκοσι (120) ημέρες από τη λήξη της ίδιας προθεσμίας για όλους τους διαδίκους.\nΗ προθεσμία αυτή δεν αναστέλλεται κατά το διάστημα της διαδικασίας διαμεσολάβησης. Αν κατά τη διάρκεια της εκκρεμοδικίας και πριν από την κατάθεση προτάσεων οι διάδικοι υπογράψουν συμφωνητικό υπαγωγής σε διαμεσολάβηση, ο διαμεσολαβητής που υπογράφει το συμφωνητικό ενημερώνει το δικαστήριο και η υπόθεση αποσύρεται από το πινάκιο. Κατά τα λοιπά ισχύει η παρ. 1 του άρθρου 9 του ν. 4640/2019 (Α` 190, διορθ. σφαλ. Α` 194). Σε περίπτωση μη υπογραφής πρακτικού επίτευξης συμφωνίας, η υπόθεση επαναφέρεται στο αρμόδιο δικαστήριο με αίτηση στη γραμματεία οποιουδήποτε από τους διαδίκους. Η γραμματεία συντάσσει έκθεση κατάθεσης και προσδιορισμού δικασίμου και ενημερώνει τους διαδίκους με οίκοθεν κλήση, η οποία δύναται να πραγματοποιείται και με ηλεκτρονικά μέσα στη διεύθυνση ηλεκτρονικού ταχυδρομείου των μερών ή των πληρεξούσιων δικηγόρων τους.»"
+  },
+  "238§1": {
+    article: "238 § 1",
+    lawText: "«1. Παρεμπίπτουσες αγωγές, ανταγωγές, παρεμβάσεις, προσεπικλήσεις και ανακοινώσεις στην περίπτωση του άρθρου 237 κατατίθενται και επιδίδονται σε όλους τους διαδίκους μέσα σε προθεσμία σαράντα (40) ημερών από το πέρας της προθεσμίας επίδοσης της αγωγής. Παρεμβάσεις μετά από προσεπίκληση ή ανακοίνωση κατατίθενται και επιδίδονται σε όλους τους διαδίκους μέσα σε προθεσμία εβδομήντα (70) ημερών από το πέρας της προθεσμίας επίδοσης της αγωγής. Αν ο αρχικός εναγόμενος ή κάποιος από τους ομοδίκους του διαμένει στο εξωτερικό ή είναι άγνωστης διαμονής, οι ως άνω προθεσμίες παρατείνονται σε εβδομήντα (70) και εκατό (100) ημέρες, αντίστοιχα, από το πέρας της προθεσμίας επίδοσης της αγωγής. Η κατάθεση των προτάσεων γίνεται σε προθεσμία ενενήντα (90) ημερών και στην περίπτωση του προηγούμενου εδαφίου σε προθεσμία εκατόν είκοσι (120) ημερών από το πέρας της προθεσμίας επίδοσης της αγωγής. Για την προσθήκη ισχύει η παρ. 2 του άρθρου 237.»"
+  },
+  "237§2": {
+    article: "237 § 2",
+    lawText: "«2. Η προσθήκη - αντίκρουση κατατίθεται εντός των επόμενων δεκαπέντε (15) ημερών από τη λήξη της προθεσμίας κατάθεσης των προτάσεων. Στην ίδια προθεσμία κατατίθεται και το δικαστικό ένσημο. Εντός των επόμενων δέκα (10) ημερών από την τελευταία αυτή προθεσμία ορίζεται ο δικαστής ή, επί πολυμελούς δικαστηρίου, η σύνθεση και ο εισηγητής για την εκδίκαση της διαφοράς.»"
+  }
+};
+
+/* =========================================================
+   ΗΜΕΡΟΛΟΓΙΑΚΟΣ ΜΗΧΑΝΙΣΜΟΣ
+   ========================================================= */
+const GR_MONTHS = ["Ιανουαρίου","Φεβρουαρίου","Μαρτίου","Απριλίου","Μαΐου","Ιουνίου","Ιουλίου","Αυγούστου","Σεπτεμβρίου","Οκτωβρίου","Νοεμβρίου","Δεκεμβρίου"];
+const GR_DAYS = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
+
+function fmtDate(d){
+  return GR_DAYS[d.getDay()] + ", " + d.getDate() + " " + GR_MONTHS[d.getMonth()] + " " + d.getFullYear();
+}
+function addCalendarDays(d, n){
+  const r = new Date(d);
+  r.setDate(r.getDate() + n);
+  return r;
+}
+function isWeekend(d){
+  const day = d.getDay();
+  return day === 0 || day === 6; // Κυριακή ή Σάββατο (144 § 3 ΚΠολΔ)
+}
+function isAugust(d){
+  return d.getMonth() === 7; // 0-indexed: Αύγουστος
+}
+function sameDate(a,b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+/* Ορθόδοξο Πάσχα (αλγόριθμος Meeus, Ιουλιανό -> Γρηγοριανό) */
+function orthodoxEaster(year){
+  const a = year % 4, b = year % 7, c = year % 19;
+  const d = (19*c + 15) % 30;
+  const e = (2*a + 4*b - d + 34) % 7;
+  const month = Math.floor((d + e + 114) / 31); // 3=Μάρτιος, 4=Απρίλιος (Ιουλιανό)
+  const day = ((d + e + 114) % 31) + 1;
+  const julianDate = new Date(year, month - 1, day);
+  // Διαφορά Ιουλιανού/Γρηγοριανού για 1900-2099: 13 ημέρες
+  return addCalendarDays(julianDate, 13);
+}
+
+function getHolidaySet(year){
+  const easter = orthodoxEaster(year);
+  const holidays = [
+    new Date(year,0,1),               // Πρωτοχρονιά
+    new Date(year,0,6),               // Θεοφάνεια
+    addCalendarDays(easter,-48),      // Καθαρά Δευτέρα
+    new Date(year,2,25),              // 25 Μαρτίου
+    addCalendarDays(easter,-2),       // Μεγάλη Παρασκευή
+    addCalendarDays(easter,1),        // Δευτέρα Πάσχα
+    new Date(year,4,1),               // Πρωτομαγιά
+    addCalendarDays(easter,50),       // Αγίου Πνεύματος
+    new Date(year,7,15),              // Κοίμηση Θεοτόκου
+    new Date(year,9,3),               // Αγίου Διονυσίου Αρεοπαγίτου (ν.1941/1991) — όλα τα δικαστήρια
+    new Date(year,9,28),              // 28 Οκτωβρίου
+    new Date(year,11,25),             // Χριστούγεννα
+    new Date(year,11,26)              // Σύναξις Θεοτόκου
+  ];
+  // καλύπτουμε και τις δύο γειτονικές χρονιές, αν η προθεσμία διασχίζει Δεκέμβριο/Ιανουάριο
+  return holidays;
+}
+function isHoliday(d){
+  const set = [...getHolidaySet(d.getFullYear()-1), ...getHolidaySet(d.getFullYear()), ...getHolidaySet(d.getFullYear()+1)];
+  return set.some(h => sameDate(h, d));
+}
+function isNonWorking(d){
+  return isWeekend(d) || isHoliday(d);
+}
+
+/* Περίοδος δικαστικών διακοπών:
+   - Κανονικά (ιδιώτες διάδικοι): μόνο Αύγουστος (1-31/8) — 31 ημέρες.
+   - Όταν διάδικος είναι το Δημόσιο ή ΝΠΔΔ: 1 Ιουλίου έως και 15 Σεπτεμβρίου
+     (77 ημέρες). Βλ. άρθρο 11 Κ.Δ. της 26ης Ιουνίου/10ης Ιουλίου 1944, το
+     οποίο διατηρήθηκε σε ισχύ και μετά την εισαγωγή του ΚΠολΔ δυνάμει του
+     άρθρου 52 αριθ. 18 ΕισΝΚΠολΔ. */
+function publicRecessWindow(year){
+  return { start: new Date(year,6,1), end: new Date(year,8,15) }; // 1/7 - 15/9
+}
+function isInRecess(d, isPublic){
+  if(isPublic){
+    const w = publicRecessWindow(d.getFullYear());
+    return d >= w.start && d <= w.end;
+  }
+  return isAugust(d);
+}
+
+/* Μετράει πόσες ημέρες εντός (start, end] ανήκουν στην περίοδο δικαστικών διακοπών */
+function countRecessDaysInRange(start, end, isPublic){
+  let count = 0;
+  let cur = addCalendarDays(start, 1);
+  while(cur <= end){
+    if(isInRecess(cur, isPublic)) count++;
+    cur = addCalendarDays(cur, 1);
+  }
+  return count;
+}
+
+/* Κύρια συνάρτηση: προσθέτει Ν ημερολογιακές ημέρες, εξαιρώντας
+   αυτόματα τις δικαστικές διακοπές Αυγούστου, και μεταθέτει τη λήξη
+   στην επόμενη εργάσιμη/μη εξαιρετέα αν χρειάζεται. */
+function calcDeadline(startDate, days, isPublic){
+  let end = addCalendarDays(startDate, days);
+  let extended = true;
+  while(extended){
+    const recDays = countRecessDaysInRange(startDate, end, isPublic);
+    const alreadyCounted = end.__recCounted || 0;
+    if(recDays > alreadyCounted){
+      end = addCalendarDays(end, recDays - alreadyCounted);
+      end.__recCounted = recDays;
+    } else {
+      extended = false;
+    }
+  }
+  while(isNonWorking(end)){
+    end = addCalendarDays(end, 1);
+  }
+  return end;
+}
+
+/* Όνομα ημέρας με σωστό άρθρο (τη/την/το), ίδια σειρά με GR_DAYS */
+const GR_DAY_ARTICLE = ["την Κυριακή","τη Δευτέρα","την Τρίτη","την Τετάρτη","την Πέμπτη","την Παρασκευή","το Σάββατο"];
+function dayArticle(d){ return GR_DAY_ARTICLE[d.getDay()]; }
+function fmtDateNoArticle(d){
+  return d.getDate() + " " + GR_MONTHS[d.getMonth()] + " " + d.getFullYear();
+}
+
+/* Παράγει τις επεξηγηματικές γραμμές («↳») ίδιο format με lawcase.gr:
+   raw ολοκλήρωση -> εξαίρεση Αυγούστου (αν εμπλέκεται) -> μετάθεση Σ/Κ ή αργίας (αν χρειάζεται) */
+function explainDeadline(startDate, days, isPublic){
+  const lines = [];
+  const raw = addCalendarDays(startDate, days);
+  lines.push("Η προθεσμία των " + days + " ημερών, θα ολοκληρώνονταν κανονικά " + dayArticle(raw) + ", " + fmtDateNoArticle(raw) + ".");
+
+  const recDays = countRecessDaysInRange(startDate, raw, isPublic);
+  let postRecess = raw;
+  if(recDays > 0){
+    postRecess = addCalendarDays(raw, recDays);
+    if(isPublic){
+      const w = publicRecessWindow(raw.getFullYear());
+      const continueDate = addCalendarDays(w.end, 1);
+      lines.push("Εξαιρέθηκε το χρονικό διάστημα από " + dayArticle(w.start) + ", " + fmtDateNoArticle(w.start) + " έως " + dayArticle(w.end) + ", " + fmtDateNoArticle(w.end) + " λόγω δικαστικών διακοπών (συνολικά 77 ημέρες). Βλ. άρθρο 11 Κ.Δ. της 26ης Ιουνίου/10ης Ιουλίου 1944, το οποίο διατηρήθηκε σε ισχύ και μετά την εισαγωγή του ΚΠολΔ δυνάμει του άρθρου 52 αριθ. 18 ΕισΝΚΠολΔ.");
+      lines.push("Η προθεσμία συνεχίζει από " + dayArticle(continueDate) + ", " + fmtDateNoArticle(continueDate) + ".");
+    } else {
+      const y = raw.getFullYear();
+      lines.push("Εξαιρέθηκε το χρονικό διάστημα από το Σάββατο, 1 Αυγούστου " + y + " έως τη Δευτέρα, 31 Αυγούστου " + y + " λόγω δικαστικών διακοπών Αυγούστου. (συνολικά 31 ημέρες). Η προθεσμία συνεχίζει από την Τρίτη, 1 Σεπτεμβρίου " + y + ".");
+    }
+  }
+
+  let finalEnd = postRecess;
+  while(isNonWorking(finalEnd)){ finalEnd = addCalendarDays(finalEnd, 1); }
+  if(finalEnd.getTime() !== postRecess.getTime()){
+    const reason = isWeekend(postRecess) ? "λόγω Σαββατοκύριακου." : "λόγω αργίας.";
+    lines.push("Η προθεσμία μετατέθηκε από " + dayArticle(postRecess) + ", " + fmtDateNoArticle(postRecess) + " για " + dayArticle(finalEnd) + ", " + fmtDateNoArticle(finalEnd) + " " + reason);
+  }
+  return lines;
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 1: Επίδοση αγωγής — άρθρο 215 § 2 ΚΠολΔ
+   ========================================================= */
+function calcStation215(filingDate, residence, isPublic, competence){
+  // TODO: όταν ισχύσει η προβλεπόμενη νομοθετική τροποποίηση που θα διαφοροποιεί
+  // τις προθεσμίες βάσει Μονομελούς/Πολυμελούς Πρωτοδικείου, η διαφοροποίηση
+  // μπαίνει εδώ (competence === "single" | "multi"). Προς το παρόν δεν επηρεάζει.
+  const days = 30; // ΔΙΟΡΘΩΘΗΚΕ: πάντα 30 ημέρες — η αναφορά σε "εξωτερικό" στο 215§2 αφορά μόνο την υποχρέωση επίδοσης στον εισαγγελέα εντός της ίδιας προθεσμίας, όχι παράταση
+  const end = calcDeadline(filingDate, days, isPublic);
+  const explain = explainDeadline(filingDate, days, isPublic);
+  return {
+    sentence: "Η επίδοση πρέπει να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "✱ Εντός 30 ημερών από την κατάθεση της αγωγής. Βλ. 215 § 2 ΚΠολΔ." + (residence==="abroad" ? " Αν η αγωγή πρέπει να επιδοθεί στο εξωτερικό, εντός του ίδιου διαστήματος πρέπει να έχει επιδοθεί και στον εισαγγελέα (άρθρο 134 § 1 ΚΠολΔ) — δεν παρατείνεται η προθεσμία." : ""),
+      ...explain.map(l => "↳ " + l)
+    ],
+    lawKey: "215§2",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 2: Κατάθεση προτάσεων — άρθρο 237 § 1 ΚΠολΔ
+   ========================================================= */
+function calcStation237_1(serviceDeadlineEnd, residence, isPublic, competence){
+  // TODO: μελλοντική διαφοροποίηση Μονομελές/Πολυμελές — δεν επηρεάζει προς το παρόν.
+  const days = (residence === "abroad") ? 120 : 90;
+  const end = calcDeadline(serviceDeadlineEnd, days, isPublic);
+  const explain = explainDeadline(serviceDeadlineEnd, days, isPublic);
+  return {
+    sentence: "Η κατάθεση προτάσεων πρέπει να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "✱ Οι προτάσεις των διαδίκων, η έκθεση επίδοσης, τα αποδεικτικά και διαδικαστικά τους έγγραφα και τα πληρεξούσια, στην τακτική διαδικασία, κατατίθενται ενενήντα (90) ημέρες μετά από τη λήξη της προθεσμίας επίδοσης της αγωγής ή της κλήσης.",
+      "✱ Εφόσον η αγωγή επιδίδεται στην αλλοδαπή, εκατόν είκοσι (120) ημέρες από τη λήξη της ίδιας προθεσμίας για όλους τους διαδίκους. Βλ. άρθρο 237 παρ. 1 εδ. α' ΚΠολΔ (όπως ισχύει από 1.1.2026).",
+      "✱ Κατάθεση έως τις 12:00 το μεσημέρι.",
+      "✱ Ισχύει για όλους τους διαδίκους αν ένας είναι κάτοικος εξωτερικού.",
+      "✱ Δεν αναστέλλεται από την ΥΑΣ Διαμεσολάβησης.",
+      ...explain.map(l => "↳ " + l)
+    ],
+    lawKey: "237§1",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 3α: Παρεμπίπτουσα αγωγή/ανταγωγή/παρέμβαση/προσεπίκληση/
+   ανακοίνωση — άρθρο 238 § 1 εδ. α' ΚΠολΔ
+   ========================================================= */
+function calcStation238_1a(serviceDeadlineEnd, residence, isPublic, competence){
+  // TODO: μελλοντική διαφοροποίηση Μονομελές/Πολυμελές — δεν επηρεάζει προς το παρόν.
+  const days = (residence === "abroad") ? 70 : 40;
+  const end = calcDeadline(serviceDeadlineEnd, days, isPublic);
+  const explain = explainDeadline(serviceDeadlineEnd, days, isPublic);
+  return {
+    sentence: "Η άσκηση και επίδοση παρέμβασης, προσεπίκλησης, ανακοίνωσης ή ανταγωγής μπορεί να γίνει μέχρι και την <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "✱ Παρεμπίπτουσες αγωγές, ανταγωγές, παρεμβάσεις, προσεπικλήσεις και ανακοινώσεις στην περίπτωση του άρθρου 237 κατατίθενται και επιδίδονται σε όλους τους διαδίκους μέσα σε προθεσμία " + days + " ημερών από το πέρας της προθεσμίας επίδοσης της αγωγής. Βλ. 238 § 1 εδ. α' ΚΠολΔ" + (residence==="abroad" ? " (70 ημέρες λόγω κατοικίας στο εξωτερικό)." : "."),
+      ...explain.map(l => "↳ " + l)
+    ],
+    lawKey: "238§1",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 3β: Παρέμβαση μετά από προσεπίκληση ή ανακοίνωση —
+   άρθρο 238 § 1 εδ. β' ΚΠολΔ
+   ========================================================= */
+function calcStation238_1b(serviceDeadlineEnd, residence, isPublic, competence){
+  // TODO: μελλοντική διαφοροποίηση Μονομελές/Πολυμελές — δεν επηρεάζει προς το παρόν.
+  const days = (residence === "abroad") ? 100 : 70;
+  const end = calcDeadline(serviceDeadlineEnd, days, isPublic);
+  const explain = explainDeadline(serviceDeadlineEnd, days, isPublic);
+  return {
+    sentence: "Η παρέμβαση του προσεπικαλούμενου μπορεί να γίνει μέχρι και τη <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "✱ Εντός " + days + " ημερών από την κατάθεση της αγωγής.",
+      "✱ Παρεμβάσεις μετά από προσεπίκληση ή ανακοίνωση κατατίθενται και επιδίδονται σε όλους τους διαδίκους μέσα σε προθεσμία εβδομήντα (70) ημερών από την κατάθεση της αγωγής. Βλ. 238 § 1 εδ. β' ΚΠολΔ (όπως ισχύει από 1.1.2026)." + (residence==="abroad" ? " (παρατείνεται σε 100 ημέρες λόγω κατοικίας στο εξωτερικό.)" : ""),
+      ...explain.map(l => "↳ " + l)
+    ],
+    lawKey: "238§1",
+    endDate: end
+  };
+}
+
+/* =========================================================
+   ΣΤΑΘΜΟΣ 4: Κατάθεση προσθήκης-αντίκρουσης — άρθρο 237 § 2 ΚΠολΔ
+   ========================================================= */
+function calcStation237_2(proposalsDeadlineEnd, isPublic, competence){
+  // TODO: μελλοντική διαφοροποίηση Μονομελές/Πολυμελές — δεν επηρεάζει προς το παρόν.
+  const end = calcDeadline(proposalsDeadlineEnd, 15, isPublic);
+  const explain = explainDeadline(proposalsDeadlineEnd, 15, isPublic);
+  return {
+    sentence: "Η κατάθεση προσθήκης μπορεί να γίνει μέχρι και τη <b>" + fmtDate(end) + "</b>.",
+    rulePoints: [
+      "✱ Η προσθήκη-αντίκρουση κατατίθεται εντός των επόμενων 15 ημερών από τη λήξη της προθεσμίας κατάθεσης των προτάσεων. Βλ. 237 § 2 ΚΠολΔ.",
+      "✱ Στην ίδια προθεσμία κατατίθεται και το δικαστικό ένσημο.",
+      ...explain.map(l => "↳ " + l)
+    ],
+    lawKey: "237§2",
+    endDate: end
+  };
+}
+function renderTimelineItem(station, isLast){
+  const law = LAW_DB[station.lawKey];
+  const id = "tl_" + Math.random().toString(36).slice(2,8);
+  return `<div class="tl-item">
+    <div class="tl-dot-col">
+      <div class="tl-dot"></div>
+      ${isLast ? "" : '<div class="tl-line"></div>'}
+    </div>
+    <div class="tl-card">
+      <div class="tl-sentence">${station.sentence}</div>
+      <div class="tl-tabs">
+        <div class="tl-tab active" onclick="setTab(this,'${id}_calc')">Υπολογισμός</div>
+        <div class="tl-tab" onclick="setTab(this,'${id}_law')">Νομοθεσία</div>
+      </div>
+      <div class="tl-pane active" id="${id}_calc">
+        ${station.rulePoints.map(p=>`<p>${p}</p>`).join("")}
+      </div>
+      <div class="tl-pane" id="${id}_law">
+        <p><b>Άρθρο ${law ? law.article : "—"}</b></p>
+        <div class="law-quote">${law ? law.lawText : "Δεν έχει συνδεθεί ακόμη κείμενο νόμου για αυτόν τον σταθμό."}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setTab(el, paneId){
+  const tabs = el.parentElement;
+  tabs.querySelectorAll(".tl-tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  const card = tabs.parentElement;
+  card.querySelectorAll(".tl-pane").forEach(p=>p.classList.remove("active"));
+  document.getElementById(paneId).classList.add("active");
+}
+
+function runCalculation(){
+  const dateVal = document.getElementById("fDate").value;
+  if(!dateVal){ alert("Συμπλήρωσε ημερομηνία κατάθεσης."); return; }
+  const filingDate = new Date(dateVal + "T00:00:00");
+  const residence = document.getElementById("fResidence").value;
+  const isPublic = document.getElementById("fPublic").value === "yes";
+  const competence = document.getElementById("fCompetence").value; // "single" | "multi" — βλ. TODO στις calcStation...
+
+  const stations = [];
+  const s1 = calcStation215(filingDate, residence, isPublic, competence);
+  stations.push(s1);
+  const s2 = calcStation237_1(s1.endDate, residence, isPublic, competence);
+  // 238§1 a) and b) both run in parallel from the same start (end of service deadline)
+  const s3a = calcStation238_1a(s1.endDate, residence, isPublic, competence);
+  const s3b = calcStation238_1b(s1.endDate, residence, isPublic, competence);
+  stations.push(s3a);
+  stations.push(s3b);
+  stations.push(s2);
+  const s4 = calcStation237_2(s2.endDate, isPublic, competence);
+  stations.push(s4);
+
+  document.getElementById("tlItems").innerHTML = stations.map((s,i)=>renderTimelineItem(s, i===stations.length-1)).join("");
+  document.getElementById("timeline").classList.add("show");
+}
+</script>
+</body>
+</html>
