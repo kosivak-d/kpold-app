@@ -80,9 +80,12 @@ textarea{min-height:80px;resize:vertical}
 .empty{text-align:center;color:#94a3b8;padding:40px;background:white;border-radius:10px}
 select{background:white}
 
-.site-nav{margin-bottom:10px}
-.site-nav a{font-size:12.5px;color:#2d6a9f;text-decoration:none;font-weight:700}
-.site-nav a:hover{text-decoration:underline}
+
+.nav-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.nav-tab{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;color:#475569;background:#e2e8f0;white-space:nowrap}
+.nav-tab.active{background:#1e3a5f;color:white}
+.nav-tab:hover{background:#cbd5e1}
+.nav-tab.active:hover{background:#1e3a5f}
 .feedback-bar{text-align:center;margin-top:14px}
 .feedback-bar a{display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12.5px}
 .feedback-bar a:hover{background:#16314f}
@@ -90,7 +93,12 @@ select{background:white}
 </head>
 <body>
 
-<div class="site-nav"><a href="index.html">&larr; Αρχική</a></div>
+<div class="nav-tabs">
+<a class="nav-tab" href="index.html">Αρχική</a>
+<a class="nav-tab active" href="articles.html">Άρθρα ΚΠολΔ</a>
+<a class="nav-tab" href="taktiki.html">Τακτική</a>
+<a class="nav-tab" href="mikrodiafores.html">Μικροδιαφορές</a>
+</div>
 
 <div class="toast" id="toast"></div>
 
