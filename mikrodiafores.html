@@ -60,26 +60,9 @@ select:focus,input[type=date]:focus{border-color:#2d6a9f}
 .cal-day.other-month:hover{background:none}
 
 .footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0}
-
-
-.nav-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.nav-tab{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;color:#475569;background:#e2e8f0;white-space:nowrap}
-.nav-tab.active{background:#1e3a5f;color:white}
-.nav-tab:hover{background:#cbd5e1}
-.nav-tab.active:hover{background:#1e3a5f}
-.feedback-bar{text-align:center;margin-top:14px}
-.feedback-bar a{display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:12.5px}
-.feedback-bar a:hover{background:#16314f}
 </style>
 </head>
 <body>
-
-<div class="nav-tabs">
-<a class="nav-tab" href="index.html">Αρχική</a>
-<a class="nav-tab" href="articles.html">Άρθρα ΚΠολΔ</a>
-<a class="nav-tab" href="taktiki.html">Τακτική</a>
-<a class="nav-tab active" href="mikrodiafores.html">Μικροδιαφορές</a>
-</div>
 
 <div class="header">
   <div class="header-title">⚖️ Υπολογισμός Προθεσμιών — Μικροδιαφορές</div>
@@ -125,11 +108,6 @@ select:focus,input[type=date]:focus{border-color:#2d6a9f}
 
 <div class="timeline" id="timeline">
   <div id="tlItems"></div>
-</div>
-
-<div class="feedback-bar">
-  <div style="font-size:11px;color:#64748b;margin-bottom:6px">Παρατηρήσεις &amp; σχόλια στο email <b style="color:#1e3a5f">kosivak@gmail.com</b></div>
-  <a href="mailto:kosivak@gmail.com?subject=Παρατήρηση - Προθεσμίες ΚΠολΔ">&#9993; Στείλτε παρατήρηση</a>
 </div>
 
 <div class="footer">Πάντα να ελέγχεται το πρωτότυπο κείμενο του νόμου</div>
@@ -347,7 +325,7 @@ function calcStation468_3proof(filingDate, residence, isPublic){
     rulePoints: [
       "Προθεσμία " + days + " ημερών από την κατάθεση της αγωγής. Βλ. 468 § 3 εδ. γ' ΚΠολΔ." +
         (isPublic ? " (θεωρείται κάτοικος εσωτερικού, καθώς διάδικος είναι το Δημόσιο/ΝΠΔΔ.)"
-                  : (residence==="abroad" ? " (50 ημέρες λόγω κατοικίας στο εξωτερικό/άγνωστης διαμονής.)" : " (ΣΗΜΕΙΩΣΗ: το lawcase.gr εμφανίζει διαφορετική ημερομηνία για αυτόν τον σταθμό — πιθανώς λόγω παλαιότερης ενημέρωσης του εργαλείου τους, 30/08/2023. Προς επιβεβαίωση στον νομικό σου έλεγχο.)"))
+                  : (residence==="abroad" ? " (50 ημέρες λόγω κατοικίας στο εξωτερικό/άγνωστης διαμονής.)" : ""))
     ],
     recessNote: buildRecessNote(filingDate, days, isPublic),
     lawKey: "468§3",
